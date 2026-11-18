@@ -30,7 +30,7 @@ that no podcast app used yet. It also reads (and helps shows publish) the spec's
 | | |
 |---|---|
 | Meter | Counts audible played seconds × your rate (sats/minute) in whole millisats with a carried remainder. Seeking, muting and the "Pay while I listen" switch stop it. Pays by episode time (2× speed pays 2 minutes per wall minute). |
-| Budget | A cap per listening session that includes mint fees. |
+| Budget | A cap per episode that includes mint fees, keeps the next batch's fee free, and survives a reload. |
 | Batches | Every 5 minutes while playing (the spec's default; 30 s in the demo), and on pause, end of episode, or tab close. |
 | Boosts | One-off payments with a message: the same endpoint without `?action=stream`, text in `memo`. |
 | Wallet | One wallet per mint in IndexedDB. Fund with a Lightning invoice or a pasted token; take the whole balance out as one token. |
@@ -54,7 +54,8 @@ A wallet that streams payments touches the mint constantly, so every failure win
   every fee is booked against your budget.
 - **Also:** paid invoices are minted even after the tab was closed; token receives are crash-safe; an exported
   token stays in the wallet until you confirm you saved it; stuck payments can be cancelled (proofs swapped back);
-  sats owed to one show never go to another; POSTs time out after 20 s; only `https` endpoints.
+  sats owed to one show never go to another; POSTs time out after 20 s and each mint request attempt after 20 s
+  (the mint's own safe retries of cached calls are bounded by its NUT-19 window); only `https` endpoints.
 
 An independent code review of the money path found three critical issues before the first commit (stale state
 across tabs, a recovery path that wrote off recoverable funds, a wallet overwrite across mints); all are fixed and
@@ -65,7 +66,7 @@ covered by tests.
 ```sh
 npm install
 npm run dev          # the page, with the demo show
-npm test             # 57 unit tests (meter, reply table, outbox failure windows, feed discovery)
+npm test             # 59 unit tests (meter, reply table, outbox failure windows, feed discovery)
 npm run test:live    # + end-to-end against the free test mint (fake Lightning) and a mock show over real HTTP
 npm run mock         # the mock Route B endpoint on 127.0.0.1:8787, for testing other clients
 npm run build        # static site in dist/
@@ -90,7 +91,6 @@ npm run build        # static site in dist/
 - **Accepted mints.** Without a mint list in the record, a show's mints are learned from its `untrusted_mint` reply;
   you may need to fund a second wallet at one of them.
 - **Keysend-only shows** (most `podcast:value` recipients) cannot be paid from a mint; nutstream does not try.
-- **The meter's budget is per listening session**; it resets on reload (sats already metered are kept and sent).
 - **Browser storage** can be cleared by the user or the browser; the page asks for persistent storage and you can
   export your balance at any time. Keep small amounts.
 - **Not yet paid with real sats end to end** against a live show from this repo: the demo uses the test mint.

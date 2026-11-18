@@ -46,6 +46,21 @@ describe('meter', () => {
     expect(m.dueSats).toBe(2);
   });
 
+  it('keeps a fee reserve free and remembers budget used on an earlier visit', () => {
+    const m = new Meter({ satsPerMinute: 60, capSats: 10, alreadySpent: 4, feeReserve: 2 });
+    m.position(0, 1000);
+    for (let t = 1; t <= 30; t++) m.position(t, 1000);
+    expect(m.take()).toBe(4); // 10 cap - 4 earlier - 2 reserve
+    expect(m.exhausted).toBe(true);
+  });
+
+  it('a cap at or below the fee reserve still meters', () => {
+    const m = new Meter({ satsPerMinute: 60, capSats: 2, feeReserve: 2 });
+    m.position(0, 1000);
+    for (let t = 1; t <= 5; t++) m.position(t, 1000);
+    expect(m.take()).toBe(1);
+  });
+
   it('rejects fractional rates', () => {
     expect(() => new Meter({ satsPerMinute: 1.5, capSats: 10 })).toThrow();
   });

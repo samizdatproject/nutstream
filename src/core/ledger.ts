@@ -1,7 +1,7 @@
 // The mint operations nutstream needs, behind a small interface so the outbox can be tested with a fake mint.
 import {
   Wallet, MintQuoteState, CheckStateEnum, getEncodedToken, getDecodedToken, OutputData, Amount,
-  serializeSwapPreview, deserializeSwapPreview,
+  serializeSwapPreview, deserializeSwapPreview, setGlobalRequestOptions,
 } from '@cashu/cashu-ts';
 import { amountToNumber, toWire, sumProofs, type WireProof } from './types.ts';
 
@@ -41,6 +41,10 @@ export interface Ledger {
   restoreMint(preview: string): Promise<WireProof[] | undefined>;
   encodeToken(proofs: WireProof[], memo?: string): string;
 }
+
+// Mint calls run while the wallet lock is held: a mint that stops answering must fail fast (default is 5 minutes).
+// On the mint's cached endpoints (NUT-19) a timeout becomes a safe retry of the same request.
+setGlobalRequestOptions({ requestTimeout: 20_000 });
 
 export class InsufficientFunds extends Error {
   constructor(public need: number, public have: number) { super(`need ${need} sats, wallet has ${have}`); }

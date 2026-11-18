@@ -177,10 +177,16 @@ function selectEpisode(i: number) {
 
 function target(): RouteBTarget | undefined { return feed?.routeB ? { url: feed.routeB.url, requestId: feed.routeB.requestId, label: feed.title } : undefined; }
 
+const spentKey = (t: RouteBTarget) => `nutstream:spent:${JSON.stringify([t.url, feed?.episodes[Number($<HTMLSelectElement>('episode').value) || 0]?.guid ?? ''])}`;
+
 function startSession() {
   const t = target();
   if (!wallet || !t) { renderMeter(); return; }
+  const key = spentKey(t);
   session = new StreamSession({
+    alreadySpent: Math.max(0, Math.floor(Number(safeGet(key) ?? 0)) || 0),
+    feeReserveSats: mode === 'demo' ? 2 : 1,
+    onSpent: (n) => safeSet(key, String(n)),
     wallet, audio, target: t,
     satsPerMinute: num('rate', 0, 100), capSats: num('cap', 0, 1_000_000),
     sendEveryMs: mode === 'demo' ? 30_000 : 5 * 60_000,

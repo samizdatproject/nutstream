@@ -8,6 +8,10 @@
 export interface MeterOptions {
   satsPerMinute: number; // integer >= 0
   capSats: number; // budget for this session (episode)
+  /** Budget already used for this episode on an earlier visit (so a reload does not grant a fresh budget). */
+  alreadySpent?: number;
+  /** Sats kept free for the fee of the batch still to come, so the cap is not overshot by it. */
+  feeReserve?: number;
 }
 
 export class Meter {
@@ -19,10 +23,17 @@ export class Meter {
   private rate: number;
   private cap: number;
 
+  private reserve: number;
+
   constructor(opts: MeterOptions) {
     this.rate = check(opts.satsPerMinute, 'satsPerMinute');
     this.cap = check(opts.capSats, 'capSats');
+    this.takenSats = check(opts.alreadySpent ?? 0, 'alreadySpent');
+    this.reserve = check(opts.feeReserve ?? 0, 'feeReserve');
   }
+
+  get feeReserve() { return this.reserve; }
+  set feeReserve(n: number) { this.reserve = check(n, 'feeReserve'); }
 
   get satsPerMinute() { return this.rate; }
   set satsPerMinute(n: number) { this.rate = check(n, 'satsPerMinute'); }
@@ -53,7 +64,7 @@ export class Meter {
     const units = ms * this.satsPerMinute + this.remainder;
     this.msat += Math.floor(units / 60);
     this.remainder = units % 60;
-    const room = (this.capSats - this.takenSats - this.feesSats) * 1000;
+    const room = (this.capSats - this.takenSats - this.feesSats - this.activeReserve) * 1000;
     if (this.msat > room) this.msat = Math.max(0, room);
   }
 
@@ -82,7 +93,9 @@ export class Meter {
   refund(n: number) { this.takenSats = Math.max(0, this.takenSats - n); }
 
   get spentSats() { return this.takenSats + this.feesSats; }
-  get exhausted() { return this.capSats > 0 ? this.spentSats * 1000 + this.msat >= this.capSats * 1000 : true; }
+  /** The reserve never takes the whole budget: a tiny cap still meters something. */
+  private get activeReserve() { return Math.min(this.reserve, Math.max(0, this.capSats - 1)); }
+  get exhausted() { return this.capSats > 0 ? (this.spentSats + this.activeReserve) * 1000 + this.msat >= this.capSats * 1000 : true; }
 }
 
 function check(n: number, name: string) {

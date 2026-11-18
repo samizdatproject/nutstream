@@ -14,6 +14,12 @@ export interface SessionOptions {
   sendEveryMs?: number;
   /** Do not send less than this on a timer or pause (each batch costs a mint fee); the rest waits. Default 5. */
   minBatchSats?: number;
+  /** Budget this episode already used on an earlier visit. */
+  alreadySpent?: number;
+  /** Fee to keep free for the next batch until a real fee has been seen (e.g. 2 on a mint that charges fees). */
+  feeReserveSats?: number;
+  /** Called whenever the used budget changes, to remember it across reloads. */
+  onSpent?: (spent: number) => void;
   onUpdate?: (s: SessionView) => void;
   onError?: (message: string) => void;
 }
@@ -41,7 +47,7 @@ export class StreamSession {
   private capFlushed = false;
 
   constructor(private o: SessionOptions) {
-    this.meter = new Meter({ satsPerMinute: o.satsPerMinute, capSats: o.capSats });
+    this.meter = new Meter({ satsPerMinute: o.satsPerMinute, capSats: o.capSats, alreadySpent: o.alreadySpent, feeReserve: o.feeReserveSats });
   }
 
   start() {
@@ -93,7 +99,8 @@ export class StreamSession {
     const wall = now - (this.lastWall || now);
     this.lastWall = now;
     this.meter.position(a.currentTime, wall, a.playbackRate, !a.paused && !this.paused && !a.muted && a.volume > 0);
-    if (this.meter.exhausted && !this.capFlushed) { this.capFlushed = true; this.flush('cap'); }
+    if (!this.meter.exhausted) this.capFlushed = false; // budget raised or freed: flush at the cap again
+    else if (!this.capFlushed) { this.capFlushed = true; this.flush('cap'); }
   }
 
   /** Hand whole sats to the wallet; unless the tab is going away, queue and send them now. */
@@ -128,6 +135,7 @@ export class StreamSession {
       if (b.status === 'done' || b.status === 'returned' || b.status === 'blocked' || b.status === 'failed') {
         this.meter.chargeFee(b.fee);
         if (b.status === 'blocked' || b.status === 'failed') this.meter.refund(b.amount); // never paid
+        this.meter.feeReserve = b.fee; // the real fee replaces the first guess: the next batch will likely cost the same
         this.chargedFees.add(b.id);
       }
     }
@@ -146,5 +154,10 @@ export class StreamSession {
     };
   }
 
-  private emit() { this.o.onUpdate?.(this.view()); }
+  private lastSpent = -1;
+  private emit() {
+    const v = this.view();
+    if (v.spent !== this.lastSpent) { this.lastSpent = v.spent; this.o.onSpent?.(v.spent); }
+    this.o.onUpdate?.(v);
+  }
 }
