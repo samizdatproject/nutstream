@@ -2,12 +2,12 @@
 // queues a streaming payment every few minutes (and on pause, end or tab hide), and keeps the outbox moving.
 import { Meter } from './meter.ts';
 import type { NutWallet } from './wallet.ts';
-import type { RouteBTarget } from './types.ts';
+import type { Target } from './types.ts';
 
 export interface SessionOptions {
   wallet: NutWallet;
   audio: HTMLAudioElement;
-  target: RouteBTarget;
+  target: Target;
   satsPerMinute: number;
   capSats: number;
   /** How often to send while playing. The spec asks for "every few minutes"; 5 by default. */
@@ -121,8 +121,7 @@ export class StreamSession {
       const owed = this.o.wallet.snapshot().owed;
       const small = owed < (this.o.minBatchSats ?? 5);
       if (small && (why === 'timer' || why === 'pause')) return; // too small to be worth a fee: wait for more
-      const b = await this.o.wallet.queueOwed();
-      if (b) this.sessionBatches.add(b.id);
+      for (const b of await this.o.wallet.queueOwed()) this.sessionBatches.add(b.id);
       await this.o.wallet.pump();
       this.chargeFees();
     }).catch((e: any) => this.o.onError?.(String(e?.message ?? e))).then(() => this.emit());

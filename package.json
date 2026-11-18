@@ -11,7 +11,8 @@
   "license": "MIT",
   "description": "Pay podcasts by the minute with Cashu ecash: Route B (NUT-18 over HTTP) streaming for any Podcasting 2.0 feed.",
   "dependencies": {
-    "@cashu/cashu-ts": "^4.13.1"
+    "@cashu/cashu-ts": "^4.13.1",
+    "nostr-tools": "2.25.2"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

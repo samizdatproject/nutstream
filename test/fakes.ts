@@ -19,7 +19,11 @@ export class FakeLedger implements Ledger {
 
   fee(inputs: number) { return Math.ceil((inputs * 100) / 1000); }
 
-  async prepareSend(amount: number, proofs: WireProof[]): Promise<PreparedSend> {
+  lastP2pk?: string;
+  /** Simulates includeFees on a fee-charging mint: the show's redeem fee is added to what it receives. */
+  receiverFee = 0;
+  async prepareSend(amount: number, proofs: WireProof[], p2pk?: string): Promise<PreparedSend> {
+    this.lastP2pk = p2pk;
     const sorted = [...proofs].sort((a, b) => b.amount - a.amount);
     const chosen: WireProof[] = [];
     for (const p of sorted) {
@@ -29,7 +33,7 @@ export class FakeLedger implements Ledger {
     const fee = this.fee(chosen.length);
     if (sumProofs(chosen) < amount + fee) throw new InsufficientFunds(amount + fee, sumProofs(proofs));
     const unselected = proofs.filter((p) => !chosen.includes(p));
-    return { preview: JSON.stringify({ key: `swap${++n}`, inputs: chosen, amount, fee }), unselected, fee };
+    return { preview: JSON.stringify({ key: `swap${++n}`, inputs: chosen, amount, fee }), unselected, fee, sendTotal: amount + this.receiverFee };
   }
 
   previewInputs(preview: string) { return JSON.parse(preview).inputs as WireProof[]; }

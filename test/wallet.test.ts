@@ -368,7 +368,7 @@ describe('outbox', () => {
     await w.addOwed(6, other); // switched shows: the 4 sats go to TARGET
     await w.queueOwed();
     const s = w.snapshot();
-    expect(s.batches.map((b) => [b.target.url, b.amount])).toEqual([[TARGET.url, 4], [other.url, 6]]);
+    expect(s.batches.map((b) => [(b.target as any).url, b.amount])).toEqual([[TARGET.url, 4], [other.url, 6]]);
   });
 
   it('refuses to open a store that holds another mint\'s wallet (never overwrites it)', async () => {

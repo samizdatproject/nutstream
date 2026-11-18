@@ -7,7 +7,9 @@ import { parseFeed, makeCashuRecord, type FeedInfo } from '../core/discover.ts';
 import { MockReceiver } from '../mock/receiver.ts';
 import { cashuRedeem } from '../mock/cashuRedeem.ts';
 import type { FetchLike } from '../core/routeB.ts';
-import type { Batch, RouteBTarget, WalletState } from '../core/types.ts';
+import { targetKey, type Batch, type RouteATarget, type Target, type WalletState } from '../core/types.ts';
+import { fetchNutzapInfo, npubToHex, publishToRelays, normalizeP2pk, LOOKUP_RELAYS, type Publisher } from '../core/nostr.ts';
+import { MockNutzapShow } from '../mock/nutzapShow.ts';
 
 const TEST_MINT = 'https://testnut.cashu.space';
 const DEMO_HOST = 'demo-show.invalid';
@@ -23,10 +25,23 @@ const demoFetch = demoShow.asFetch('demo');
 const routedFetch: FetchLike = (url, init) =>
   new URL(url).host === DEMO_HOST ? demoFetch(url, init) : (fetch(url, init) as unknown as ReturnType<FetchLike>);
 
+// Route A demo: the demo show's nutzap side, in the page (no public relays). Keys are public demo values: test mint only.
+const DEMO_NPUB = 'npub1c03alksu2ny3p4faqj6kt6jmxemjr5gnmkudxv2dp0658pn2kl7qqjnlap';
+const DEMO_RELAY = 'wss://demo-relay.invalid';
+const DEMO_WALLET_SK = '3da263304b61467c92b980b9967207f1c94854b3b384ac1605662337939421c8';
+const DEMO_ROUTE_A: RouteATarget = {
+  route: 'A', p: npubToHex(DEMO_NPUB), p2pk: normalizeP2pk('8a9b318ce8ab28df6ee915f5103a0ef06bd0acf4107463b2ef0d445ee87f094b')!,
+  mints: [TEST_MINT], relays: [DEMO_RELAY], label: 'nutstream demo show',
+};
+const demoNutzaps = new MockNutzapShow({ showHex: DEMO_ROUTE_A.p, mints: DEMO_ROUTE_A.mints, redeem: cashuRedeem(undefined, DEMO_WALLET_SK) });
+const routedPublish: Publisher = (ev, relays) => (relays.includes(DEMO_RELAY) ? demoNutzaps.publish(ev, relays) : publishToRelays(ev, relays));
+
 type Mode = 'demo' | 'live';
 let mode: Mode = 'demo';
 let wallet: NutWallet | undefined;
 let feed: FeedInfo | undefined;
+let routeA: RouteATarget | undefined;
+let routePref: 'A' | 'B' = 'B';
 let session: StreamSession | undefined;
 let invoicePoll: number | undefined;
 
@@ -60,7 +75,11 @@ async function openWallet(mintUrl: string) {
   if (mode === 'demo' && url !== TEST_MINT) throw new Error('demo mode uses only the test mint');
   if (mode === 'live' && url === TEST_MINT) { msg('That is the test mint: use Demo mode for test sats.'); return; }
   try {
-    wallet = await new NutWallet({ store: new IdbStore(walletStoreKey(url)), ledger: new CashuLedger(url), fetch: routedFetch }).open();
+    wallet = await new NutWallet({
+      store: new IdbStore(walletStoreKey(url)), ledger: new CashuLedger(url), fetch: routedFetch, publish: routedPublish,
+      // the demo show's kind:10019 lives in this page, not on public relays
+      lookup: (t) => (t.p === DEMO_ROUTE_A.p ? Promise.resolve({ ...DEMO_ROUTE_A, fetchedAt: Date.now() }) : fetchNutzapInfo(t.p, [...new Set([...t.relays, ...LOOKUP_RELAYS])], 6000, t.label)),
+    }).open();
   } catch (e: any) {
     msg(`Could not open the wallet: ${e?.message ?? e}`);
     return;
@@ -101,7 +120,7 @@ function renderHistory(batches: Batch[]) {
       blocked: 'show refused this mint', failed: 'failed',
     }[b.status];
     const item = li('', `st-${b.status}`);
-    item.append(span(`${when} · ${b.kind === 'boost' ? 'Boost' : 'Stream'} ${b.amount} sats`), span(status, 'pill'));
+    item.append(span(`${when} · ${b.kind === 'boost' ? 'Boost' : 'Stream'} ${b.amount} sats${b.target.route === 'A' ? ' (nutzap)' : ''}`), span(status, 'pill'));
     if (b.fee) item.append(span(`fee ${b.fee}`, 'muted small'));
     if (b.memo) item.append(span(`“${b.memo}”`, 'small'));
     if (b.lastError && b.status !== 'done') item.append(span(b.lastError === 'insufficient-funds' ? 'waiting: add sats to the wallet' : b.lastError, 'small muted'));
@@ -146,10 +165,11 @@ function useFeed(xml: string, from?: string) {
   const img = $<HTMLImageElement>('show-image');
   img.hidden = !feed.image;
   if (feed.image) img.src = feed.image;
-  const r = feed.routeB;
-  setShow(feed.title,
-    r ? `Pays ${new URL(r.url).host} over Route B (NUT-18 HTTP)${r.source === 'sovereigncast-inferred' ? ' · endpoint inferred from the feed\'s Sovereigncast host' : ' · from the feed\'s cashu record'}`
-      : `No Cashu endpoint in this feed${feed.npub ? ' (it has a Nostr npub: nutzaps are not supported yet)' : ''}. You can still listen.`);
+  routeA = undefined;
+  routePref = 'B';
+  (document.querySelector('input[name=route][value=B]') as HTMLInputElement).checked = true;
+  renderRoute();
+  if (feed.npub) void loadRouteA(feed);
   if (feed.suggestedSatsPerMinute && mode === 'live') $<HTMLInputElement>('rate').value = String(feed.suggestedSatsPerMinute);
   const sel = $<HTMLSelectElement>('episode');
   sel.replaceChildren(...feed.episodes.map((ep, i) => {
@@ -165,6 +185,39 @@ function useFeed(xml: string, from?: string) {
 
 function setShow(title: string, route: string) { $('show-title').textContent = title; $('route').textContent = route; }
 
+/** Route A: find the show's kind:10019 (in the page for the demo show, on public relays otherwise). */
+async function loadRouteA(f: FeedInfo) {
+  let t: RouteATarget | undefined;
+  if (f.npub === DEMO_NPUB) t = DEMO_ROUTE_A;
+  else {
+    try { t = await fetchNutzapInfo(npubToHex(f.npub!), undefined, 6000, f.title); } catch { t = undefined; }
+  }
+  if (feed !== f) return; // the user moved on
+  routeA = t;
+  if (!f.routeB && t) routePref = 'A';
+  renderRoute();
+  if (!f.routeB && t) selectEpisode(Number($<HTMLSelectElement>('episode').value) || 0); // first usable route: start metering
+}
+
+function renderRoute() {
+  if (!feed) return;
+  const b = feed.routeB;
+  const both = !!(b && routeA);
+  $('route-pick').hidden = !both;
+  const t = target();
+  if (!t) {
+    setShow(feed.title, feed.npub && !routeA
+      ? 'Looking for the show\'s nutzap info (kind:10019)… If none is found, you can still listen.'
+      : 'No Cashu endpoint in this feed. You can still listen.');
+    return;
+  }
+  if (t.route === 'A') {
+    setShow(feed.title, `Pays the show with nutzaps (Route A, NIP-61) via ${t.relays.length} relay(s) · public kind:9321 events, each signed with a fresh key · accepted mints: ${t.mints.map((m) => new URL(m).host).join(', ')}`);
+  } else {
+    setShow(feed.title, `Pays ${new URL(t.url).host} over Route B (NUT-18 HTTP, private)${b?.source === 'sovereigncast-inferred' ? ' · endpoint inferred from the feed\'s Sovereigncast host' : ' · from the feed\'s cashu record'}`);
+  }
+}
+
 function selectEpisode(i: number) {
   stopSession();
   const ep = feed?.episodes[i];
@@ -175,9 +228,13 @@ function selectEpisode(i: number) {
 
 // ---------- session ----------
 
-function target(): RouteBTarget | undefined { return feed?.routeB ? { url: feed.routeB.url, requestId: feed.routeB.requestId, label: feed.title } : undefined; }
+function target(): Target | undefined {
+  const b = feed?.routeB ? { url: feed.routeB.url, requestId: feed.routeB.requestId, label: feed.title } : undefined;
+  if (routePref === 'A' && routeA) return routeA;
+  return b ?? routeA;
+}
 
-const spentKey = (t: RouteBTarget) => `nutstream:spent:${JSON.stringify([t.url, feed?.episodes[Number($<HTMLSelectElement>('episode').value) || 0]?.guid ?? ''])}`;
+const spentKey = (t: Target) => `nutstream:spent:${JSON.stringify([targetKey(t), feed?.episodes[Number($<HTMLSelectElement>('episode').value) || 0]?.guid ?? ''])}`;
 
 function startSession() {
   const t = target();
@@ -297,8 +354,21 @@ $('owner-make').onclick = () => {
 // another tab may have changed the wallet: re-read it when this one comes back
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void wallet?.refresh().catch(() => undefined); });
 
+for (const input of document.querySelectorAll<HTMLInputElement>('input[name=route]')) {
+  input.onchange = () => {
+    routePref = input.value === 'A' ? 'A' : 'B';
+    renderRoute();
+    selectEpisode(Number($<HTMLSelectElement>('episode').value) || 0);
+  };
+}
+
+demoNutzaps.onReceive((r) => {
+  $('inbox-total').textContent = String(demoShow.total + demoNutzaps.received.reduce((s, x) => s + x.amount, 0));
+  $('inbox').prepend(li(`${new Date(r.at).toLocaleTimeString()} · nutzap ${r.kind === 'boost' ? 'boost' : 'stream'} ${r.amount} sats${r.memo ? ` · “${r.memo}”` : ''}`));
+});
+
 demoShow.onReceive((r) => {
-  $('inbox-total').textContent = String(demoShow.total);
+  $('inbox-total').textContent = String(demoShow.total + demoNutzaps.received.reduce((s, x) => s + x.amount, 0));
   $('inbox').prepend(li(`${new Date(r.at).toLocaleTimeString()} · ${r.kind === 'boost' ? 'Boost' : 'Stream'} ${r.amount} sats${r.memo ? ` · “${r.memo}”` : ''}`));
 });
 

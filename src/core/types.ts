@@ -9,14 +9,34 @@ export interface WireProof {
   witness?: string;
 }
 
-/** Where a payment goes: a Route B (NUT-18 HTTP POST) endpoint. */
+/** Route B: a NUT-18 HTTP POST endpoint (private). */
 export interface RouteBTarget {
+  route?: 'B';
   url: string;
   /** The `id` of the payment request (creq), when the feed's request had one. */
   requestId?: string;
   /** Show name, for the UI only. */
   label?: string;
 }
+
+/** Route A: NIP-61 nutzaps to the show's kind:10019 (public kind:9321 events). */
+export interface RouteATarget {
+  route: 'A';
+  /** The show's Nostr pubkey (hex). */
+  p: string;
+  /** The P2PK key its wallet receives with (02-prefixed). */
+  p2pk: string;
+  mints: string[];
+  relays: string[];
+  label?: string;
+  /** When this kind:10019 snapshot was read (ms). Refreshed before locking if it is old. */
+  fetchedAt?: number;
+}
+
+export type Target = RouteBTarget | RouteATarget;
+export const isRouteA = (t: Target): t is RouteATarget => t.route === 'A';
+/** Identity of a payee, to keep sats owed to one show from going to another. */
+export const targetKey = (t: Target) => (isRouteA(t) ? `nostr:${t.p}` : t.url);
 
 export type BatchStatus =
   | 'new' // queued; no proofs chosen yet
@@ -32,8 +52,10 @@ export interface Batch {
   kind: 'stream' | 'boost';
   amount: number; // sats the show should receive
   memo: string;
-  target: RouteBTarget;
+  target: Target;
   mint: string;
+  /** Route A: the signed kind:9321 (JSON), saved before it is published so a retry sends the identical event. */
+  event?: string;
   status: BatchStatus;
   /** Serialized swap preview: spendable bearer material until the swap settles. */
   swapPreview?: string;
@@ -54,7 +76,7 @@ export interface WalletState {
   batches: Batch[];
   /** Sats metered but not yet queued (survives page close), and the show they are owed to. */
   owed: number;
-  owedTarget?: RouteBTarget;
+  owedTarget?: Target;
   /** Totals, for the UI. */
   paid: number;
   fees: number;

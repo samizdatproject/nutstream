@@ -3,7 +3,8 @@ import { Wallet, MintOperationError, NetworkError } from '@cashu/cashu-ts';
 import { sumProofs, type WireProof } from '../core/types.ts';
 import type { Redeem } from './receiver.ts';
 
-export function cashuRedeem(onProofs?: (proofs: unknown[]) => void): Redeem {
+/** `privkey`: for P2PK-locked proofs (route A), the show's wallet key. */
+export function cashuRedeem(onProofs?: (proofs: unknown[]) => void, privkey?: string): Redeem {
   const wallets = new Map<string, Promise<Wallet>>();
   const walletFor = (mint: string) => {
     let w = wallets.get(mint);
@@ -18,7 +19,8 @@ export function cashuRedeem(onProofs?: (proofs: unknown[]) => void): Redeem {
   return async (mint: string, proofs: WireProof[]) => {
     const wallet = await walletFor(mint);
     try {
-      const fresh = await wallet.ops.receive(proofs as any).run();
+      const op = wallet.ops.receive(proofs as any);
+      const fresh = await (privkey ? op.privkey(privkey) : op).run();
       onProofs?.(fresh);
       return { amount: sumProofs(fresh) };
     } catch (e) {

@@ -16,13 +16,20 @@
 import type { Ledger, ProofState } from './ledger.ts';
 import { InsufficientFunds, PartialRestore } from './ledger.ts';
 import { Lock, type Store } from './store.ts';
-import { emptyState, normalizeState, sumProofs, type Batch, type RouteBTarget, type WalletState, type WireProof } from './types.ts';
+import { emptyState, normalizeState, sumProofs, isRouteA, targetKey, type Batch, type RouteATarget, type RouteBTarget, type Target, type WalletState, type WireProof } from './types.ts';
 import { buildBody, postPayment, type FetchLike } from './routeB.ts';
+import { buildNutzap, fetchNutzapInfo, normalizeP2pk, publishToRelays, sameMint, LOOKUP_RELAYS, type Publisher } from './nostr.ts';
 
 export interface WalletOptions {
   store: Store;
   ledger: Ledger;
   fetch: FetchLike;
+  /** Route A: publishes a signed kind:9321 to relays (default: real relays over WebSocket). */
+  publish?: Publisher;
+  /** Route A: re-reads a show's current kind:10019 before locking (default: public relays). */
+  lookup?: (t: RouteATarget) => Promise<RouteATarget | undefined>;
+  /** Route A: extra relays tried when the show's own relays keep refusing a nutzap. */
+  fallbackRelays?: string[];
   now?: () => number;
   /** Minimum gap between POSTs to one endpoint host (the spec allows 10 per minute per IP). */
   postGapMs?: number;
@@ -38,8 +45,17 @@ const RETRY_MS = [30_000, 60_000, 120_000, 300_000, 600_000];
 const PAUSE_MS = 30 * 60_000;
 const QUOTE_TTL_MS = 24 * 3600_000;
 const OPEN = ['new', 'prepared', 'ready'];
+/** Route A: a silent nutzap under 100 sats counts as streaming at Sovereigncast; larger ones would be boosts. */
+const ROUTE_A_STREAM_MAX = 99;
+/** Route A: re-read the show's kind:10019 before locking when the snapshot is older than this. */
+const NUTZAP_INFO_MAX_AGE_MS = 15 * 60_000;
 
-export function validTarget(url: string) {
+export function validTarget(t: string | Target) {
+  if (typeof t !== 'string' && isRouteA(t)) {
+    return /^[0-9a-f]{64}$/.test(t.p) && !!normalizeP2pk(t.p2pk) && t.relays.length > 0 && t.relays.every((r) => /^wss:\/\//.test(r))
+      && t.mints.length > 0 && t.mints.every((m) => /^https:\/\//.test(m));
+  }
+  const url = typeof t === 'string' ? t : t.url;
   let u: URL;
   try { u = new URL(url); } catch { return false; }
   if (u.protocol === 'https:') return true;
@@ -243,39 +259,48 @@ export class NutWallet {
    * Remember metered sats for `target` that are not queued yet (survives closing the tab). Sats still owed to a
    * different show are queued for that show first, so they never go to the wrong one.
    */
-  async addOwed(n: number, target: RouteBTarget) {
+  async addOwed(n: number, target: Target) {
     if (!Number.isInteger(n) || n <= 0) return;
-    if (!validTarget(target.url)) throw new Error('payments go only to https endpoints');
+    if (!validTarget(target)) throw new Error('payments go only to https endpoints or a valid nutzap target');
     await this.locked(async () => {
-      if (this.state.owed > 0 && this.state.owedTarget && this.state.owedTarget.url !== target.url) this.queueOwedLocked();
+      if (this.state.owed > 0 && this.state.owedTarget && targetKey(this.state.owedTarget) !== targetKey(target)) this.queueOwedLocked();
       this.state.owed += n;
       this.state.owedTarget = target;
       await this.save();
     });
   }
 
-  /** Queue everything owed as one streaming payment to the show it is owed to. */
-  async queueOwed() {
+  /** Queue everything owed as streaming payment(s) to the show it is owed to. Returns the batches created. */
+  async queueOwed(): Promise<Batch[]> {
     return this.locked(async () => {
-      const b = this.queueOwedLocked();
-      if (b) await this.save();
-      return b;
+      const bs = this.queueOwedLocked();
+      if (bs.length) await this.save();
+      return bs;
     });
   }
 
-  private queueOwedLocked() {
-    const n = this.state.owed;
+  private queueOwedLocked(): Batch[] {
+    let n = this.state.owed;
     const target = this.state.owedTarget;
-    if (n <= 0 || !target) return undefined;
+    if (n <= 0 || !target) return [];
     this.state.owed = 0;
-    const b = this.newBatch('stream', n, '', target);
-    this.state.batches.push(b);
-    return b;
+    // Route A: keep each streaming nutzap under the boost threshold
+    const out: Batch[] = [];
+    while (n > 0) {
+      const part = isRouteA(target) ? Math.min(n, ROUTE_A_STREAM_MAX) : n;
+      const b = this.newBatch('stream', part, '', target);
+      this.state.batches.push(b);
+      out.push(b);
+      n -= part;
+    }
+    return out;
   }
 
-  async queueBoost(target: RouteBTarget, amount: number, memo: string) {
+  async queueBoost(target: Target, amount: number, memo: string) {
     if (!Number.isInteger(amount) || amount <= 0) throw new Error('boost amount must be a whole number of sats');
-    if (!validTarget(target.url)) throw new Error('payments go only to https endpoints');
+    if (!validTarget(target)) throw new Error('payments go only to https endpoints or a valid nutzap target');
+    // Route A: a silent nutzap under 100 sats would be booked as streaming; a short note makes it a boost
+    if (isRouteA(target) && amount < 100 && !memo.trim()) memo = 'boost';
     return this.locked(async () => {
       const b = this.newBatch('boost', amount, memo.slice(0, 500), target);
       this.state.batches.push(b);
@@ -284,7 +309,7 @@ export class NutWallet {
     });
   }
 
-  private newBatch(kind: Batch['kind'], amount: number, memo: string, target: RouteBTarget): Batch {
+  private newBatch(kind: Batch['kind'], amount: number, memo: string, target: Target): Batch {
     const t = this.now();
     return { id: `${t.toString(36)}-${Math.random().toString(36).slice(2, 8)}`, kind, amount, memo, target, mint: this.mintUrl,
       status: 'new', fee: 0, attempts: 0, nextAt: t, createdAt: t };
@@ -298,6 +323,7 @@ export class NutWallet {
     return this.locked(async () => {
       const b = this.state.batches.find((x) => x.id === batchId);
       if (!b || !['new', 'ready'].includes(b.status)) return false;
+      if (b.status === 'ready' && isRouteA(b.target)) return false; // locked to the show's key: they are the show's sats now
       if (b.status === 'new') {
         b.status = 'failed';
         b.lastError = 'cancelled';
@@ -344,9 +370,32 @@ export class NutWallet {
 
   private async advance(b: Batch) {
     if (b.status === 'new') {
+      if (isRouteA(b.target) && this.now() - (b.target.fetchedAt ?? 0) > NUTZAP_INFO_MAX_AGE_MS) {
+        // the point of no return is next: lock only to the show's *current* key, mints and relays
+        let fresh: RouteATarget | undefined;
+        try { fresh = await (this.opts.lookup ?? ((t) => fetchNutzapInfo(t.p, [...new Set([...t.relays, ...LOOKUP_RELAYS])], 6000, t.label)))(b.target); } catch { fresh = undefined; }
+        if (!fresh) { b.lastError = 'could not re-read the show\'s nutzap info (kind:10019); will retry'; b.nextAt = this.now() + this.backoff(b); return; }
+        b.target = { ...fresh, label: b.target.label };
+      }
+      if (isRouteA(b.target) && !b.target.mints.some((m) => sameMint(m, b.mint))) {
+        // the show cannot redeem proofs from this mint (NIP-61: sending on an unlisted mint burns the money)
+        b.status = 'blocked';
+        b.acceptedMints = b.target.mints;
+        b.lastError = 'the show does not accept this mint';
+        return;
+      }
       let p;
       try {
-        p = await this.opts.ledger.prepareSend(b.amount, this.state.proofs);
+        p = await this.opts.ledger.prepareSend(b.amount, this.state.proofs, isRouteA(b.target) ? b.target.p2pk : undefined);
+        // Route A streaming: what the show sees is the proof total (amount + its redeem fee). Keep that under 100,
+        // moving the excess into a new batch, so a streaming nutzap is never booked as a boost.
+        for (let i = 0; isRouteA(b.target) && b.kind === 'stream' && p.sendTotal > ROUTE_A_STREAM_MAX && i < 3; i++) {
+          const excess = p.sendTotal - ROUTE_A_STREAM_MAX;
+          if (excess >= b.amount) break;
+          b.amount -= excess;
+          this.state.batches.push(this.newBatch('stream', excess, '', b.target));
+          p = await this.opts.ledger.prepareSend(b.amount, this.state.proofs, b.target.p2pk);
+        }
       } catch (e: any) {
         b.lastError = e instanceof InsufficientFunds ? 'insufficient-funds' : `prepare: ${e?.message ?? e}`;
         b.nextAt = this.now() + (e instanceof InsufficientFunds ? 15_000 : this.backoff(b));
@@ -373,25 +422,48 @@ export class NutWallet {
       this.state.proofs.push(...out.keep);
       b.send = out.send;
       b.swapPreview = undefined;
+      if (isRouteA(b.target)) {
+        const mintAsListed = b.target.mints.find((m) => sameMint(m, b.mint))!; // the u tag must match the 10019 exactly
+        b.event = JSON.stringify(buildNutzap(out.send, mintAsListed, b.target.p, b.memo, this.now()));
+      }
       b.status = 'ready';
       b.attempts = 0;
       b.lastError = undefined;
       b.nextAt = this.now();
       await this.save();
     }
+    if (b.status === 'ready' && isRouteA(b.target)) {
+      // the proofs are locked to the show's key; publishing the saved event is all that is left (idempotent: same id)
+      const wait = (this.state.lastPost['nostr'] ?? 0) + this.postGapMs - this.now();
+      if (wait > 0) { b.nextAt = this.now() + wait; return; }
+      this.state.lastPost['nostr'] = this.now();
+      b.attempts++;
+      if (!b.event) { // never expected: rebuild from the saved locked proofs rather than retrying a parse error forever
+        const mintAsListed = b.target.mints.find((m) => sameMint(m, b.mint)) ?? b.mint;
+        b.event = JSON.stringify(buildNutzap(b.send!, mintAsListed, b.target.p, b.memo, this.now()));
+      }
+      // after a few refusals, also try well-known relays: the show may read from them too
+      const relays = b.attempts > 3 ? [...new Set([...b.target.relays, ...(this.opts.fallbackRelays ?? LOOKUP_RELAYS)])] : b.target.relays;
+      const r = await (this.opts.publish ?? publishToRelays)(JSON.parse(b.event), relays);
+      if (r.accepted > 0) return this.settle(b);
+      b.lastError = `not delivered yet (the sats are locked to the show; no relay accepted the nutzap): ${r.errors.slice(0, 2).join('; ') || 'unknown'}`;
+      b.nextAt = this.now() + this.backoff(b);
+      return;
+    }
     if (b.status === 'ready') {
-      const host = new URL(b.target.url).host;
+      const target = b.target as RouteBTarget;
+      const host = new URL(target.url).host;
       const wait = (this.state.lastPost[host] ?? 0) + this.postGapMs - this.now();
       if (wait > 0) { b.nextAt = this.now() + wait; return; }
       this.state.lastPost[host] = this.now();
       b.attempts++;
-      const out = await postPayment(this.opts.fetch, b.target, b.kind, buildBody(b.target, b.mint, b.send!, b.memo));
+      const out = await postPayment(this.opts.fetch, target, b.kind, buildBody(target, b.mint, b.send!, b.memo));
       switch (out.kind) {
         case 'paid':
           return this.settle(b);
         case 'too-small':
           if ((await this.giveBack(b, 'returned', 'amount_too_small')) === 'all' && b.kind === 'stream') {
-            if (this.state.owed > 0 && this.state.owedTarget && this.state.owedTarget.url !== b.target.url) this.queueOwedLocked();
+            if (this.state.owed > 0 && this.state.owedTarget && targetKey(this.state.owedTarget) !== targetKey(b.target)) this.queueOwedLocked();
             this.state.owed += b.amount;
             this.state.owedTarget = b.target;
           }

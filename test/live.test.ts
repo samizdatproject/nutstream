@@ -27,6 +27,29 @@ describe.runIf(process.env.LIVE === '1')('live: testnut + mock show over HTTP', 
     expect((await ledger.proofStates(restored!.send)).every((s) => s === 'UNSPENT')).toBe(true);
   });
 
+  it('route A: proofs locked to a NIP-61 key (02-prefixed x-only) carry DLEQ, need the key, and redeem with it', async () => {
+    const { generateSecretKey, getPublicKey } = await import('nostr-tools/pure');
+    const { Wallet } = await import('@cashu/cashu-ts');
+    const { buildNutzap, normalizeP2pk } = await import('../src/core/nostr.ts');
+    const ledger = new CashuLedger(MINT);
+    const inv = await ledger.createInvoice(64);
+    for (let i = 0; i < 20 && (await ledger.quoteState(inv.quote)) === 'UNPAID'; i++) await new Promise((r) => setTimeout(r, 500));
+    const proofs = await ledger.completeMint(await ledger.prepareMint(inv.quote, 64));
+    const sk = generateSecretKey();
+    const skHex = Buffer.from(sk).toString('hex');
+    const p2pk = normalizeP2pk(getPublicKey(sk))!;
+    const p = await ledger.prepareSend(10, proofs, p2pk);
+    const { send } = await ledger.completeSend(p.preview);
+    expect(send.every((x) => x.dleq)).toBe(true);
+    expect(JSON.parse(send[0].secret)[0]).toBe('P2PK');
+    const ev = buildNutzap(send, MINT, 'ab'.repeat(32), '');
+    const fromEvent = ev.tags.filter((t) => t[0] === 'proof').map((t) => JSON.parse(t[1]));
+    const show = new Wallet(MINT); await show.loadMint();
+    await expect(show.ops.receive(fromEvent as any).run()).rejects.toThrow(); // no key: refused
+    const got = await show.ops.receive(fromEvent as any).privkey(skHex).run();
+    expect(got.reduce((s: number, x: any) => s + Number(x.amount), 0)).toBeGreaterThanOrEqual(10);
+  });
+
   it('funds, streams, boosts, survives a replayed POST, and exports the rest', async () => {
     const receiver = new MockReceiver({ acceptedMints: [MINT], redeem: cashuRedeem() });
     const { server, url } = await serve(receiver);

@@ -11,6 +11,8 @@ export interface PreparedSend {
   /** Proofs not used by the swap: they go straight back to the wallet. */
   unselected: WireProof[];
   fee: number;
+  /** What the show will receive in proofs: the amount plus its own redeem fee (includeFees). */
+  sendTotal: number;
 }
 
 export type ProofState = 'UNSPENT' | 'PENDING' | 'SPENT';
@@ -18,7 +20,7 @@ export type ProofState = 'UNSPENT' | 'PENDING' | 'SPENT';
 export interface Ledger {
   readonly mintUrl: string;
   /** Pick inputs for `amount` (plus fees, so the receiver nets `amount`). Throws InsufficientFunds. */
-  prepareSend(amount: number, proofs: WireProof[]): Promise<PreparedSend>;
+  prepareSend(amount: number, proofs: WireProof[], p2pk?: string): Promise<PreparedSend>;
   /** Run (or replay) a persisted swap. Replaying the same preview is safe inside the mint's NUT-19 window. */
   completeSend(preview: string): Promise<{ keep: WireProof[]; send: WireProof[] }>;
   /**
@@ -79,13 +81,15 @@ export class CashuLedger implements Ledger {
     return this.loading;
   }
 
-  async prepareSend(amount: number, proofs: WireProof[]): Promise<PreparedSend> {
+  async prepareSend(amount: number, proofs: WireProof[], p2pk?: string): Promise<PreparedSend> {
     await this.ensure();
     const have = sumProofs(proofs);
     if (have < amount) throw new InsufficientFunds(amount, have);
     let preview;
     try {
-      preview = await this.wallet.ops.send(amount, proofs as any).includeFees(true).prepare();
+      const op = this.wallet.ops.send(amount, proofs as any).includeFees(true);
+      // Route A: lock the outputs to the show's P2PK key (NUT-11); the show's wallet alone can spend them
+      preview = await (p2pk ? op.asP2PK({ pubkey: p2pk }) : op).prepare();
     } catch (e: any) {
       if (/not enough|insufficient/i.test(String(e?.message))) throw new InsufficientFunds(amount, have);
       throw e;
@@ -94,6 +98,7 @@ export class CashuLedger implements Ledger {
       preview: JSON.stringify(serializeSwapPreview(preview)),
       unselected: (preview.unselectedProofs ?? []).map(toWire),
       fee: amountToNumber(preview.fees ?? 0),
+      sendTotal: (preview.sendOutputs ?? []).reduce((s, o) => s + amountToNumber(o.blindedMessage.amount), 0),
     };
   }
 

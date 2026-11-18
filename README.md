@@ -1,6 +1,6 @@
 # nutstream
 
-**Pay podcasts by the minute with Cashu ecash: privately, from any Podcasting 2.0 feed.**
+**Pay podcasts by the minute with Cashu ecash: privately, from any Podcasting 2.0 feed. Both routes of the Cashu streaming spec: Route B (private HTTPS) and Route A (NIP-61 nutzaps).**
 
 nutstream is the listener side of Cashu streaming payments. Paste any podcast feed, set a rate and a budget, press
 play: it meters what you actually hear and pays the show in small batches over plain HTTPS. It implements
@@ -24,6 +24,18 @@ that no podcast app used yet. It also reads (and helps shows publish) the spec's
   2. for Sovereigncast shows, the `purpose="sovereigncast"` host plus `/api/community/ecash-payment`. This second
      rule is **our inference** from the documented path; the player labels it as inferred.
 - **Static.** A web page and the mint, nothing else: the live endpoint answers CORS preflights with `*`, so no proxy.
+
+## Route A (nutzaps)
+
+For shows that publish a Nostr npub (`<podcast:txt purpose="nostr">`), nutstream reads the show's `kind:10019`
+(relays, accepted mints, P2PK key), locks the proofs to that key (NUT-11, with DLEQ, `02`-prefixed as NIP-61 requires)
+and publishes a `kind:9321` nutzap to the show's relays. The `u` tag is the mint exactly as the show lists it; a mint
+the show does not list is refused before any swap (NIP-61: sending there burns the money). Streaming nutzaps stay
+silent and under 100 sats, so Sovereigncast books them as streaming rather than boosts. Each nutzap is signed with a
+fresh throwaway key, so payments are not linkable by signer, but the events are public: when a show offers both,
+nutstream defaults to Route B and lets you choose. The signed event is saved before publishing, so a retry sends the
+identical event. Verified on the test mint: locked proofs carry DLEQ, cannot be redeemed without the key, and redeem
+with it.
 
 ## What it does
 
@@ -66,7 +78,7 @@ covered by tests.
 ```sh
 npm install
 npm run dev          # the page, with the demo show
-npm test             # 59 unit tests (meter, reply table, outbox failure windows, feed discovery)
+npm test             # 65 unit tests (meter, reply table, outbox failure windows, feed discovery)
 npm run test:live    # + end-to-end against the free test mint (fake Lightning) and a mock show over real HTTP
 npm run mock         # the mock Route B endpoint on 127.0.0.1:8787, for testing other clients
 npm run build        # static site in dist/
@@ -81,13 +93,14 @@ npm run build        # static site in dist/
 | `src/core/ledger.ts` | cashu-ts 4 wrapper: crash-safe send/receive, NUT-07 states, NUT-09 restore, invoices |
 | `src/core/routeB.ts` | Route B payload, `?action=stream`, the reply table |
 | `src/core/discover.ts` | Feed parsing, endpoint discovery, `purpose="cashu"` record encode/decode |
+| `src/core/nostr.ts` | Route A: `kind:10019` lookup, P2PK key format, `kind:9321` build and publish |
 | `src/core/session.ts` | Wires an `<audio>` element to the meter and the wallet |
 | `src/mock/` | A Route B endpoint built only from the spec, redeeming at the mint for real (tests + demo show) |
 | `src/ui/` | The page |
 
 ## Limits (honest list)
 
-- **Route A (nutzaps) is not implemented.** Feeds with only a Nostr npub are shown as "no Cashu endpoint".
+- **Route A nutzaps cannot be cancelled** once locked: they belong to the show's key (no refund path yet).
 - **Accepted mints.** Without a mint list in the record, a show's mints are learned from its `untrusted_mint` reply;
   you may need to fund a second wallet at one of them.
 - **Keysend-only shows** (most `podcast:value` recipients) cannot be paid from a mint; nutstream does not try.
