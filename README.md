@@ -65,7 +65,7 @@ covered by tests.
 ```sh
 npm install
 npm run dev          # the page, with the demo show
-npm test             # 53 unit tests (meter, reply table, outbox failure windows, feed discovery)
+npm test             # 57 unit tests (meter, reply table, outbox failure windows, feed discovery)
 npm run test:live    # + end-to-end against the free test mint (fake Lightning) and a mock show over real HTTP
 npm run mock         # the mock Route B endpoint on 127.0.0.1:8787, for testing other clients
 npm run build        # static site in dist/
