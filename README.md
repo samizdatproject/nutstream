@@ -9,7 +9,7 @@ play: it meters what you actually hear and pays the show in small batches over p
 that no podcast app used yet. It also reads (and helps shows publish) the spec's proposed
 `<podcast:txt purpose="cashu">` feed record.
 
-- **Live demo:** _(GitHub Pages link once published)_. "Demo show" mode runs on the free test mint: add test sats,
+- **Live demo:** https://samizdatproject.github.io/nutstream/ . "Demo show" mode runs on the free test mint: add test sats,
   press play, and watch payments arrive in the demo show's inbox. No real money.
 - **Built for [Nut November 2026](https://nutnovember.org)**, Value4Value track. Everything in this repo was written
   from Nov 18, 2026.
