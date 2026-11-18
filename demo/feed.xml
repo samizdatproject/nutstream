@@ -6,6 +6,7 @@
     <description>A demo feed for nutstream. Payments go to an in-page stand-in for a show's Route B endpoint, on the free test mint (no real sats).</description>
     <language>en</language>
     <podcast:txt purpose="cashu">creqAo2F0gaNhdGRwb3N0YWF4NWh0dHBzOi8vZGVtby1zaG93LmludmFsaWQvYXBpL2NvbW11bml0eS9lY2FzaC1wYXltZW50YWf3YXVjc2F0YWRzbnV0c3RyZWFtIGRlbW8gc2hvdw==</podcast:txt>
+    <podcast:txt purpose="nostr">npub1c03alksu2ny3p4faqj6kt6jmxemjr5gnmkudxv2dp0658pn2kl7qqjnlap</podcast:txt>
     <podcast:value type="lightning" method="keysend" suggested="0.00000010000"/>
     <item>
       <title>Pop City (Komiku, CC0)</title>

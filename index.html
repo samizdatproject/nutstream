@@ -7,8 +7,8 @@
   <title>nutstream</title>
   <meta name="description" content="Pay podcasts by the minute with Cashu ecash, privately, from any Podcasting 2.0 feed.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥜</text></svg>">
-  <script type="module" crossorigin src="./assets/index-wdFBjkXy.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-Cpw7Um2F.css">
+  <script type="module" crossorigin src="./assets/index-Blrk8Jes.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CORgFZ7i.css">
 </head>
 <body>
   <header class="top">
@@ -42,6 +42,10 @@
         <div>
           <h2 id="show-title">Loading…</h2>
           <p id="route" class="route"></p>
+          <div id="route-pick" class="route-pick" role="radiogroup" aria-label="Payment route" hidden>
+            <label><input type="radio" name="route" value="B" checked> Route B · private (HTTPS)</label>
+            <label><input type="radio" name="route" value="A"> Route A · nutzaps (public Nostr events)</label>
+          </div>
         </div>
       </div>
 
@@ -106,7 +110,7 @@
 
       <section id="inbox-card" class="card inbox" aria-labelledby="inbox-h">
         <h2 id="inbox-h">Demo show inbox</h2>
-        <p class="small muted">A stand-in for the show's Route B endpoint, running in this page. It answers exactly as the spec says and redeems every payment at the test mint.</p>
+        <p class="small muted">A stand-in for the show, running in this page: its Route B endpoint answers exactly as the spec says, and its nutzap side (Route A) checks each kind:9321 and redeems the locked proofs with the show's key. Every payment is redeemed at the test mint.</p>
         <p class="balance"><span id="inbox-total">0</span> sats received</p>
         <ol id="inbox" class="history"></ol>
       </section>
@@ -125,9 +129,9 @@
     <section class="card wide how" aria-labelledby="how-h">
       <h2 id="how-h">How it works</h2>
       <ol>
-        <li><strong>Find the show's endpoint.</strong> From the feed's <code>purpose="cashu"</code> record, or, for a Sovereigncast show, its <code>purpose="sovereigncast"</code> host plus <code>/api/community/ecash-payment</code> (inferred; marked in the player).</li>
+        <li><strong>Find the show's endpoint.</strong> Route B: the feed's <code>purpose="cashu"</code> record, or, for a Sovereigncast show, its <code>purpose="sovereigncast"</code> host plus <code>/api/community/ecash-payment</code> (inferred; marked in the player). Route A: the feed's <code>purpose="nostr"</code> npub and its <code>kind:10019</code> (relays, mints, P2PK key).</li>
         <li><strong>Meter what you hear.</strong> Played seconds × your rate, in whole millisats. Seeking, muting and the pause switch stop the meter. The budget includes mint fees.</li>
-        <li><strong>Send in batches over plain HTTPS.</strong> Every few minutes (and when you pause or close the tab) one NUT-18 payload goes to <code>…?action=stream</code>. No Nostr events, so there is no public minute-by-minute record of what you listen to.</li>
+        <li><strong>Send in batches.</strong> Every few minutes (and when you pause or close the tab). Route B posts one NUT-18 payload to <code>…?action=stream</code> over HTTPS: no public record of what you listen to. Route A locks the proofs to the show's key and publishes a <code>kind:9321</code> nutzap, signed with a fresh key each time; streaming nutzaps stay silent and under 100 sats so they count as streaming, not boosts.</li>
         <li><strong>Nothing gets lost.</strong> Each step is saved before the next one runs; a lost reply is replayed and comes back as <em>already redeemed</em>. Retries follow the spec's reply table.</li>
       </ol>
       <p class="small muted">Open source (MIT) · <a href="https://github.com/samizdatproject/nutstream">github.com/samizdatproject/nutstream</a> · Demo music: Komiku, CC0.</p>
