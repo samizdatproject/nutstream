@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>nutstream</title>
+  <meta name="description" content="Pay podcasts by the minute with Cashu ecash, privately, from any Podcasting 2.0 feed.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥜</text></svg>">
+  <link rel="stylesheet" href="/src/ui/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <h1>nutstream</h1>
+      <p class="tag">Pay podcasts by the minute with Cashu ecash: privately, from any Podcasting 2.0 feed.</p>
+      <nav class="modes" role="tablist" aria-label="Mode">
+        <button role="tab" id="mode-demo" aria-selected="true">Demo show <small>test sats</small></button>
+        <button role="tab" id="mode-live" aria-selected="false">Any feed <small>real sats</small></button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap grid">
+    <section class="card player" aria-labelledby="show-title">
+      <div id="feed-picker" class="feed-picker" hidden>
+        <label for="feed-url">Feed URL</label>
+        <div class="row">
+          <input id="feed-url" type="url" placeholder="https://… (RSS feed)" spellcheck="false">
+          <button id="feed-load">Load</button>
+        </div>
+        <details id="paste-box">
+          <summary>Feed blocks browsers? Paste its XML</summary>
+          <textarea id="feed-xml" rows="4" placeholder="<rss …>"></textarea>
+          <button id="feed-parse">Use pasted XML</button>
+        </details>
+      </div>
+
+      <div class="show">
+        <img id="show-image" alt="" hidden>
+        <div>
+          <h2 id="show-title">Loading…</h2>
+          <p id="route" class="route"></p>
+        </div>
+      </div>
+
+      <label for="episode">Episode</label>
+      <select id="episode"></select>
+      <audio id="audio" controls preload="none"></audio>
+
+      <div class="pay">
+        <div class="field"><label for="rate">Sats per minute</label><input id="rate" type="number" min="0" max="100" step="1" value="10"></div>
+        <div class="field"><label for="cap">Budget (sats)</label><input id="cap" type="number" min="0" step="1" value="100"></div>
+        <label class="switch"><input id="paying" type="checkbox" checked> Pay while I listen</label>
+      </div>
+      <div class="meter" aria-live="polite">
+        <div class="bar"><span id="bar-fill"></span></div>
+        <p><strong id="spent">0</strong> of <span id="cap-show">100</span> sats used · <span id="accrued">0.000</span> sat accruing · <span id="next"></span></p>
+      </div>
+
+      <form id="boost" class="boost">
+        <input id="boost-amount" type="number" min="1" step="1" value="21" aria-label="Boost amount in sats">
+        <input id="boost-memo" type="text" maxlength="200" placeholder="Message to the show (optional)" aria-label="Boost message">
+        <button type="submit">Boost</button>
+      </form>
+
+      <h3>Payments</h3>
+      <ol id="history" class="history"><li class="muted">Nothing sent yet.</li></ol>
+    </section>
+
+    <aside class="side">
+      <section class="card wallet" aria-labelledby="wallet-h">
+        <h2 id="wallet-h">Wallet</h2>
+        <p class="balance"><span id="balance">0</span> sats</p>
+        <p class="muted small">at <span id="mint-label"></span><span id="inflight"></span></p>
+        <div id="live-mint" class="field" hidden>
+          <label for="mint">Mint</label>
+          <div class="row"><input id="mint" type="url" spellcheck="false" placeholder="https://mint…"><button id="mint-use">Use</button></div>
+          <p id="mint-hint" class="small muted"></p>
+        </div>
+        <form id="fund" class="row">
+          <input id="fund-amount" type="number" min="1" step="1" value="200" aria-label="Amount in sats">
+          <button type="submit">Add sats</button>
+        </form>
+        <div id="invoice" class="invoice" hidden>
+          <p class="small">Pay this Lightning invoice:</p>
+          <textarea id="invoice-text" rows="3" readonly></textarea>
+          <div class="row"><a id="invoice-open" class="button" href="#">Open in wallet</a><button id="invoice-copy" type="button">Copy</button></div>
+          <p id="invoice-status" class="small muted">Waiting for payment…</p>
+        </div>
+        <details>
+          <summary>Receive a Cashu token</summary>
+          <textarea id="token-in" rows="3" placeholder="cashuB…"></textarea>
+          <button id="token-receive">Receive</button>
+        </details>
+        <details>
+          <summary>Take the balance out</summary>
+          <p class="small">Moves everything into one token for another Cashu wallet. Copy it before you leave the page.</p>
+          <button id="export">Export as token</button>
+          <textarea id="token-out" rows="3" readonly hidden></textarea>
+          <button id="export-done" type="button" hidden>I saved it</button>
+        </details>
+        <p id="wallet-msg" class="small" role="status"></p>
+      </section>
+
+      <section id="inbox-card" class="card inbox" aria-labelledby="inbox-h">
+        <h2 id="inbox-h">Demo show inbox</h2>
+        <p class="small muted">A stand-in for the show's Route B endpoint, running in this page. It answers exactly as the spec says and redeems every payment at the test mint.</p>
+        <p class="balance"><span id="inbox-total">0</span> sats received</p>
+        <ol id="inbox" class="history"></ol>
+      </section>
+    </aside>
+
+    <section class="card wide owners" aria-labelledby="owners-h">
+      <h2 id="owners-h">For show owners: add Cashu to your feed</h2>
+      <p>nutstream reads the <code>&lt;podcast:txt purpose="cashu"&gt;</code> record proposed in Nodesignal's <a href="https://gitlab.com/nodesignal/podcasting_tools/-/blob/main/CASHU_STREAMING.md">Cashu streaming spec</a>: a NUT-18 payment request with no amount, not single-use, unit sat, and one HTTP POST transport. Enter your endpoint to get the line for your feed.</p>
+      <div class="row">
+        <input id="owner-url" type="url" placeholder="https://your-host/api/community/ecash-payment" spellcheck="false">
+        <button id="owner-make">Make record</button>
+      </div>
+      <textarea id="owner-out" rows="3" readonly hidden></textarea>
+    </section>
+
+    <section class="card wide how" aria-labelledby="how-h">
+      <h2 id="how-h">How it works</h2>
+      <ol>
+        <li><strong>Find the show's endpoint.</strong> From the feed's <code>purpose="cashu"</code> record, or, for a Sovereigncast show, its <code>purpose="sovereigncast"</code> host plus <code>/api/community/ecash-payment</code> (inferred; marked in the player).</li>
+        <li><strong>Meter what you hear.</strong> Played seconds × your rate, in whole millisats. Seeking, muting and the pause switch stop the meter. The budget includes mint fees.</li>
+        <li><strong>Send in batches over plain HTTPS.</strong> Every few minutes (and when you pause or close the tab) one NUT-18 payload goes to <code>…?action=stream</code>. No Nostr events, so there is no public minute-by-minute record of what you listen to.</li>
+        <li><strong>Nothing gets lost.</strong> Each step is saved before the next one runs; a lost reply is replayed and comes back as <em>already redeemed</em>. Retries follow the spec's reply table.</li>
+      </ol>
+      <p class="small muted">Open source (MIT) · <a href="https://github.com/samizdatproject/nutstream">github.com/samizdatproject/nutstream</a> · Demo music: Komiku, CC0.</p>
+    </section>
+  </main>
+  <script type="module" src="/src/ui/app.ts"></script>
+</body>
+</html>

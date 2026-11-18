@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/css" href="feed.css"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:podcast="https://podcastindex.org/namespace/1.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <atom:link rel="self" type="application/atom+xml" href="https://serve.podhome.fm/rss/e8df0b13-47de-544a-99b7-ec7cbd960a16" title="MP3 Audio" />
+    <atom:link rel="hub" href="https://pubsubhubbub.appspot.com/" />
+    <podcast:podping usesPodping="true" />
+    <podcast:value type="lightning" method="lnaddress" suggested="0.00021000000">
+      <podcast:valueRecipient name="Nodesignal LN" type="lnaddress" address="nodesignal@getalby.com" split="100" fee="false" customKey="lnurl_callback" customValue="https://getalby.com/lnurlp/nodesignal/callback" />
+    </podcast:value>
+    <podcast:podroll>
+      <podcast:remoteItem feedGuid="537e4d76-e51c-5a01-a88d-83450d7cf7e8" feedUrl="https://feed.podbean.com/muenzweg21/feed.xml" />
+      <podcast:remoteItem feedGuid="1fb0c8bd-e761-5faa-98ee-0f79dda91c27" feedUrl="https://anchor.fm/s/68a48810/podcast/rss" />
+      <podcast:remoteItem feedGuid="30d14739-7183-56b4-b914-a8430a8552f3" feedUrl="https://honigdachs.podigee.io/feed/mp3" />
+      <podcast:remoteItem feedGuid="1240c5ad-724b-4443-8c5f-be0bcd2a850c" feedUrl="https://serve.podhome.fm/rss/1240c5ad-724b-4443-8c5f-be0bcd2a850c" />
+    </podcast:podroll>
+    <image>
+      <url>https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/638479937760580471Logo_Nodesignal_Podcast.jpg</url>
+      <title>Nodesignal - Deine Bitcoin-Frequenz</title>
+      <link>https://nodesignal.space/</link>
+    </image>
+    <podcast:image href="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/638479937760580471Logo_Nodesignal_Podcast.jpg" type="image/jpeg" alt="Nodesignal - Deine Bitcoin-Frequenz" />
+    <podcast:trailer pubdate="Mon, 26 Jan 2026 17:00:00 +0000" url="https://serve.podhome.fm/episode/24263e26-0aa8-432a-467a-08dc1370a35c/639050396767940617c8c53702-235d-46ec-844e-49a586cbc414v2.mp3" length="720788" type="audio/mpeg" season="4">Nodesignal-Trailer - Staffel 4</podcast:trailer>
+    <podcast:trailer pubdate="Fri, 2 Feb 2024 08:00:00 +0000" url="https://serve.podhome.fm/episode/24263e26-0aa8-432a-467a-08dc1370a35c/638424522009739045fb2ddea7-0f49-42bb-a13d-08c43c5f8e41v5.mp3" length="5905575" type="audio/mpeg" season="2">Nodesignal Kanal Trailer Staffel 2</podcast:trailer>
+    <podcast:updateFrequency rrule="FREQ=WEEKLY">Weekly</podcast:updateFrequency>
+    <podcast:txt purpose="sovereigncast">https://pm.nodesignal.space</podcast:txt>
+    <podcast:txt purpose="nostr">npub1n0devk3h2l3rx6vmt24a3lz4hsxp7j8rn3x44jkx6daj7j8jzc0q2u02cy</podcast:txt>
+    <podcast:medium>podcast</podcast:medium>
+    <title>Nodesignal - Deine Bitcoin-Frequenz</title>
+    <description><![CDATA[Jeden Samstag sendet Nodesignal eine neue Folge mit Gesprächen und Interviews über Bitcoin hinaus in die Welt. 
+
+Reines Signal, keine Störgeräusche, keine Werbung.
+Focus on the signal, not on the noise!]]></description>
+    <link>https://nodesignal.space/</link>
+    <language>de</language>
+    <copyright><![CDATA[Die Nodesignal Crew]]></copyright>
+    <podcast:locked owner="nodesignal@gmail.com">no</podcast:locked>
+    <podcast:guid>e8df0b13-47de-544a-99b7-ec7cbd960a16</podcast:guid>
+    <podcast:funding url="lightning:nodesignal@getalby.com">Lightning-Tips: nodesignal@getalby.com</podcast:funding>
+    <generator>Podhome (https://www.podhome.fm)</generator>
+    <managingEditor>nodesignal@gmail.com</managingEditor>
+    <lastBuildDate>Fri, 13 Nov 2026 20:55:52 +0000</lastBuildDate>
+    <pubDate>Fri, 13 Nov 2026 20:55:52 +0000</pubDate>
+    <itunes:title>Nodesignal - Deine Bitcoin-Frequenz</itunes:title>
+    <itunes:image href="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/638479937760580471Logo_Nodesignal_Podcast.jpg" />
+    <itunes:new-feed-url>https://serve.podhome.fm/rss/e8df0b13-47de-544a-99b7-ec7cbd960a16</itunes:new-feed-url>
+    <itunes:author>Die Nodesignal Crew</itunes:author>
+    <itunes:owner>
+      <itunes:name>Die Nodesignal Crew</itunes:name>
+      <itunes:email>nodesignal@gmail.com</itunes:email>
+    </itunes:owner>
+    <itunes:explicit>false</itunes:explicit>
+    <itunes:category text="Technology" />
+    <itunes:type>episodic</itunes:type>
+    <item>
+      <title>Nodesignal-Talk - E302 - libbitcoin is coming</title>
+      <description><![CDATA[<p>In der heutigen Folge sprechen Jan-Paul und Thorsten mit Kevin (Eynhaender) über Libbitcoin, die zweite, von Grund auf neu gebaute Umsetzung des Bitcoin-Regelwerks neben Bitcoin Core. Wir klären, was Libbitcoin ist und wie es ohne eigenes UTXO-Set funktioniert. Außerdem geht es um Bitcoin-Node-Vielfalt, Performance, Electrum-Server und Block-Explorer als Teil des Baukastens.</p><p>Von und mit: actionslave, Thorsten ⚡️ Kevin / Eynhaender</p><p>Produzent: Thorsten ⚡️</p><p>Hier könnt ihr uns eine Spende über Lightning da lassen: <strong>⚡️nodesignal@getalby.com</strong></p><p>Zusätzlich haben wir auch einen Silent Payment Link: sp1qq0a2rles9y32ffmj0eawvjglgqsgj7hq99ers580l98k42a7rh9szq3sa50fh2e5lwf22fxcjy0qw88u72vlj328qr39da245sq4nrskuqvvv5l4</p><p>Podcasting 2.0 Player mit allen Community Funktionen und Wahrung deiner Privatspähre gesucht? Check unseren eigenen Player "<strong>Hopp</strong>" aus! Verfügbar im <a href="https://zapstore.dev/apps/space.sovereigncast.hopp" rel="noopener noreferrer" target="_blank">Zapstore</a> und unter <a href="https://gitlab.com/nodesignal/hopp/-/releases" rel="noopener noreferrer" target="_blank">Gitlab als Release f</a>ür den Direktdownload.</p><p>Neben dem Podcast findet ihr uns auch auf <a href="https://www.youtube.com/channel/UC12a1vnQ91xai-irFZQ9vHA/" rel="noopener noreferrer" target="_blank">YouTube</a></p><p>Für Feedback und weitergehenden Diskussionen kommt gerne in die Telegramgruppe von <a href="https://t.me/nodesignal" rel="noopener noreferrer" target="_blank">Nodesignal</a> und bewertet uns bei Spotify und Apple Podcasts, das hilft uns sehr. Folgt uns auch gerne bei Nostr:npub1n0devk3h2l3rx6vmt24a3lz4hsxp7j8rn3x44jkx6daj7j8jzc0q2u02cy und <a href="https://x.com/nodesignal" rel="noopener noreferrer" target="_blank">X(Twitter)</a>.</p><ul><li>Münzgasse #64 mit Kevin: „Libbitcoin, Zitadelle und Kryptoökonomie“: <a href="https://fountain.fm/episode/LABEBaxmXP9p9zfmZxd2" rel="noopener noreferrer" target="_blank">https://fountain.fm/episode/LABEBaxmXP9p9zfmZxd2</a></li><li>Libbitcoin is Coming:<a href=" https://libbitcoin.org/" rel="noopener noreferrer" target="_blank"> https://libbitcoin.org/</a></li><li>Q&amp;A mit Eric Voskuil: <a href="https://uncensoredtech.substack.com/p/libbitcoin-q-and-a-with-eric-voskuil" rel="noopener noreferrer" target="_blank">https://uncensoredtech.substack.com/p/libbitcoin-q-and-a-with-eric-voskuil</a></li><li>Jameson Lopp, 2025 Bitcoin Node Performance Tests: <a href="https://blog.lopp.net/2025-bitcoin-node-performance-tests/" rel="noopener noreferrer" target="_blank">https://blog.lopp.net/2025-bitcoin-node-performance-tests/</a></li><li>Antoine Poinsot, Libbitcoin for Core people: <a href="https://delvingbitcoin.org/t/libbitcoin-for-core-people/1222" rel="noopener noreferrer" target="_blank">https://delvingbitcoin.org/t/libbitcoin-for-core-people/1222</a></li><li>Bitcoin Magazine (2016), Interview mit Eric Voskuil: <a href="https://bitcoinmagazine.com/technical/bitcoin-always-needed-more-than-one-body-of-developers-an-interview-with-libbitcoin-s-eric-voskuil-1456762744" rel="noopener noreferrer" target="_blank">https://bitcoinmagazine.com/technical/bitcoin-always-needed-more-than-one-body-of-developers-an-interview-with-libbitcoin-s-eric-voskuil-1456762744</a></li><li>Voskuil, Cryptoeconomics (PDF): <a href="https://voskuil.org/cryptoeconomics/cryptoeconomics.pdf" rel="noopener noreferrer" target="_blank">https://voskuil.org/cryptoeconomics/cryptoeconomics.pdf</a></li><li>README von libbitcoin-server: <a href="https://github.com/libbitcoin/libbitcoin-server/blob/master/README.md" rel="noopener noreferrer" target="_blank">https://github.com/libbitcoin/libbitcoin-server/blob/master/README.md</a></li><li>Artikel von Vitalik Buterin zu Libbitcoin 2013: <a href="https://bitcoinmagazine.com/business/what-libbitcoin-and-sx-are-and-why-they-matter-1376064919" rel="noopener noreferrer" target="_blank">https://bitcoinmagazine.com/business/what-libbitcoin-and-sx-are-and-why-they-matter-1376064919</a></li></ul><p>Timestamps:</p><p>00:22 Einführung in Libbitcoin und die Gäste</p><p>04:04 Kevin's Hintergrund und Einstieg in Bitcoin</p><p>05:50 Die Entwicklung von Libbitcoin und seine Philosophie</p><p>09:11 Technische Unterschiede zwischen Libbitcoin und Bitcoin Core</p><p>12:08 Die Historie von Libbitcoin und seine Gründer</p><p>16:46 Vorteile von Libbitcoin</p><p>19:23 Einfache Installation und Synchronisation von Libbitcoin</p><p>22:19 Integration von Elektrum und Silent Payment Indizes</p><p>24:39 Wallet-Funktionalitäten und Entwicklungsfokus</p><p>26:56 Initial Block Download (IBD) und seine Bedeutung</p><p>35:51 UTXO-Set und seine Relevanz in Libbitcoin</p><p>39:18 Die Herausforderungen des Transaction Pools</p><p>42:19 Kernunterschiede zwischen Core und Libbitcoin</p><p>43:11 Philosophische Überlegungen zu Implementierungen</p><p>46:31 Die Bedeutung von Spezifikationen und Tests</p><p>51:34 Zitadelle Uckermark</p><p>53:05 Ausblick und Verabschiedung</p>]]></description>
+      <guid isPermaLink="false">70851470-a6cd-4c62-83ca-7d02603e463a</guid>
+      <link>https://nodesignal.space/E302</link>
+      <pubDate>Fri, 13 Nov 2026 19:59:30 +0000</pubDate>
+      <podcast:value type="lightning" method="lnaddress" suggested="0.00000005000">
+        <podcast:valueRecipient name="Nodesignal LN" type="lnaddress" address="nodesignal@getalby.com" split="80" fee="false" customKey="lnurl_callback" customValue="https://getalby.com/lnurlp/nodesignal/callback" />
+        <podcast:valueRecipient name="Thorsten ⚡️" type="lnaddress" address="altbierjupp@getalby.com" split="20" fee="false" customKey="lnurl_callback" customValue="https://getalby.com/lnurlp/altbierjupp/callback" />
+      </podcast:value>
+      <podcast:soundbite startTime="681.00" duration="47.00">Libbitcoin löst Satoshis Versprechen ein</podcast:soundbite>
+      <podcast:soundbite startTime="556.00" duration="52.00">Satoshis Prognose und was Core fehlt</podcast:soundbite>
+      <itunes:image href="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/639299855966201361_episode_70851470-a6cd-4c62-83ca-7d02603e463a.jpg" />
+      <podcast:image href="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/639299855966201361_episode_70851470-a6cd-4c62-83ca-7d02603e463a.jpg" type="image/jpeg" alt="Nodesignal-Talk - E302 - libbitcoin is coming" />
+      <itunes:duration>00:55:50</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+      <itunes:title>Nodesignal-Talk - E302 - libbitcoin is coming</itunes:title>
+      <itunes:author>Die Nodesignal Crew</itunes:author>
+      <itunes:episode>302</itunes:episode>
+      <podcast:episode>302</podcast:episode>
+      <itunes:season>5</itunes:season>
+      <podcast:season>5</podcast:season>
+      <itunes:episodeType>Full</itunes:episodeType>
+      <enclosure url="https://serve.podhome.fm/episode/24263e26-0aa8-432a-467a-08dc1370a35c/63929985580381790970851470-a6cd-4c62-83ca-7d02603e463a.mp3" length="53599593" type="audio/mpeg" />
+      <podcast:alternateEnclosure type="video/mp4">
+        <podcast:source uri="https://youtu.be/mMKaV2a8ssk" />
+      </podcast:alternateEnclosure>
+      <podcast:chapters url="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/63929985580381790970851470-a6cd-4c62-83ca-7d02603e463av1.chapters.json" type="application/json" />
+      <podcast:transcript url="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/transcript_70851470-a6cd-4c62-83ca-7d02603e463a639299870665266222.html" type="text/html" language="de" rel="transcript" />
+      <podcast:transcript url="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/70851470-a6cd-4c62-83ca-7d02603e463a639299870662259160.srt" type="application/x-subrip" language="de" rel="captions" />
+      <podcast:transcript url="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/70851470-a6cd-4c62-83ca-7d02603e463a639299870659242111.vtt" type="text/vtt" language="de" rel="captions" />
+      <podcast:person role="Host" href="https://nodesignal.space" img="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/638440293642854059MRQ9ChsC_400x400.jpg">Thorsten ⚡️</podcast:person>
+      <podcast:person role="Producer">Thorsten ⚡️(Cutting)</podcast:person>
+      <podcast:person role="Host" href="https://primal.net/p/nprofile1qqspfyzftuxs55wr0vdqd3snjtaazxgrsjmc4wp3n6k7gktcfe08k0c7jmdy2">Actionslave</podcast:person>
+      <podcast:person role="Guest" img="https://r2.primal.net/cache/3/62/f0/362f05698662b790f6b76cbe5b6618c08089d44d3a53aaacb93d1ffdca84315f.jpg">Kevin / Eynhaender</podcast:person>
+    </item>
+<item>
+      <title>Nodesignal-Buchclub - E301 - Cryptoeconomics #7 - Valido, ergo sum - Sicherheit und Ökonomie im Netzwerk der Nodes</title>
+      <description><![CDATA[<p>In der heutigen Folge sprechen actionslave, Zetti und Calso im Nodesignal-Buchclub über Eric Voskuils „Cryptoeconomics – Fundamental Principles of Bitcoin“ (deutsch: „Kryptoökonomie“, übersetzt). Wer sichert Bitcoin eigentlich: die Fullnode oder der Mensch dahinter, der selbst validiert und handelt? Wir diskutieren einige ausgewählte Kapitel, die das Betreiben einer Node aus der Sicht des gesamten Netzwerks und dessen Ökonomie betrachten.</p><p>Von und mit: actionslave, Zetti, Calso</p><p>Produzent: zettizettler</p><p>Hier könnt ihr uns eine Spende über Lightning da lassen: <strong>⚡️nodesignal@getalby.com</strong></p><p>Zusätzlich haben wir auch einen Silent Payment Link: sp1qq0a2rles9y32ffmj0eawvjglgqsgj7hq99ers580l98k42a7rh9szq3sa50fh2e5lwf22fxcjy0qw88u72vlj328qr39da245sq4nrskuqvvv5l4</p><p>Podcasting 2.0 Player mit allen Community Funktionen und Wahrung deiner Privatspähre gesucht? Check unseren eigenen Player "<strong>Hopp</strong>" aus! Verfügbar im <a href="https://zapstore.dev/apps/space.sovereigncast.hopp" rel="noopener noreferrer" target="_blank">Zapstore</a> und unter <a href="https://gitlab.com/nodesignal/hopp/-/releases" rel="noopener noreferrer" target="_blank">Gitlab als Release für den Direktdownload</a>.</p><p>Neben dem Podcast findet ihr uns auch auf <a href="https://www.youtube.com/channel/UC12a1vnQ91xai-irFZQ9vHA/" rel="noopener noreferrer" target="_blank">YouTube</a></p><p>Für Feedback und weitergehenden Diskussionen kommt gerne in die Telegramgruppe von <a href="https://t.me/nodesignal" rel="noopener noreferrer" target="_blank">Nodesignal</a> und bewertet uns bei Spotify und Apple Podcasts, das hilft uns sehr. Folgt uns auch gerne bei Nostr:npub1n0devk3h2l3rx6vmt24a3lz4hsxp7j8rn3x44jkx6daj7j8jzc0q2u02cy und <a href="https://x.com/nodesignal" rel="noopener noreferrer" target="_blank">X(Twitter)</a>.</p><ul><li>Das <a href="https://voskuil.org/cryptoeconomics/cryptoeconomics.pdf" rel="noopener noreferrer" target="_blank">Buch als freies PDF</a>:</li><li><a href="https://voskuil.org/cryptoeconomics/index.html" rel="noopener noreferrer" target="_blank">Übersicht</a> zum Buch</li><li><a href="https://anchor.fm/cryptoecon" rel="noopener noreferrer" target="_blank">Hörbuch</a> (gratis)</li><li><a href="https://pod.link/aHR0cHM6Ly9zZXJ2ZS5wb2Rob21lLmZtL3Jzcy9lOGRmMGIxMy00N2RlLTU0NGEtOTliNy1lYzdjYmQ5NjBhMTY/episode/ODJlYjA3YjgtYjM5NS00MjM0LTlmNWItYmQzOTljZDJmMzEx" rel="noopener noreferrer" target="_blank">Folge Casa Zetti</a></li><li><a href="https://pod.link/aHR0cHM6Ly9zZXJ2ZS5wb2Rob21lLmZtL3Jzcy9lOGRmMGIxMy00N2RlLTU0NGEtOTliNy1lYzdjYmQ5NjBhMTY/episode/OWNkMGMwMTgtNGNmOC00OWEyLTgwMGEtY2FjM2QyMTI5ZjVl" rel="noopener noreferrer" target="_blank">Folge Keine Node ist auch keine Lösung</a></li></ul><p>Timestamps:</p><p>00:22 Buchclub-Runde und der Aufhänger: eigene Nodes betreiben</p><p>04:01 Warum die Folge Voskulks Full-Node-Perspektive neu sortiert</p><p>07:50 Bitcoin als sozialer Graph: Händler, Nodes und Konsens</p><p>11:19 Warum die Person hinter der Node entscheidend ist</p><p>15:15 Zentrale Autorität, Gelddefinition und Widerstand</p><p>19:03 Voskulks These: Menschen sichern Bitcoin, nicht Technik allein</p><p>22:49 Das Risikoverteilungsprinzip und das Widerstandsaxiom</p><p>26:33 Full Nodes, persönliche Risiken und staatlicher Druck</p><p>29:42 Wie Dezentralisierung Angriffe auf das Netzwerk erschwert</p><p>31:38 „Bitcoin ist ein Werkzeug, keine Magie“</p><p>33:09 Das qualitative Sicherheitsmodell: Knoten, Kanten und Umsätze</p><p>36:00 Zentralisierung und Dezentralisierung als zwei Extreme</p><p>37:16 Ökonomische Sicherheit oder bloß wirtschaftliche Verteilung?</p><p>39:44 Händler, Miner und das qualitative Sicherheitsmodell</p><p>43:02 Warum sich Sicherheit nicht auf einer Skala messen lässt</p><p>44:26 Hashrate, Verteilung und Bestätigungssicherheit</p><p>48:15 Wie Selbstvalidierung ungültige Coins abwehren soll</p><p>55:55 Delegierte Dienste, ETFs und sinkende Dezentralität</p><p>57:59 Anonymität, Tor und Schutz vor Zwang</p><p>01:03:24 Der Hortungsfehlschluss und die Rolle des Handels</p><p>01:11:59 Was als Handel zählt: Ausgeben, tauschen und CoinJoin</p><p>01:15:06 Gold als Gegenbeispiel: Vertrauen statt eigener Prüfung</p><p>01:19:46 Ausblick auf Zentralisierungsrisiken und öffentliche Daten</p><p>01:19:59 Zentralisierungsrisiken: Bedienhürden und Gebühren</p><p>01:21:48 Wie gebündelte Zahlungsdienste Zentralisierung fördern</p><p>01:23:19 Müssen Händler ihre eigene Node betreiben?</p><p>01:25:57 Bedrohungslage, Regulierung und Anreize</p><p>01:28:24 Drei Warnzeichen: Zahlungsdienste, Wallets und APIs</p><p>01:29:51 Warum Anonymität auch anderen zugutekommt</p><p>01:32:51 Hard Forks und das Risiko unterschiedlicher Node-Implementierungen</p><p>01:35:07 Das Public Data Principle und die Rolle von Anonymität</p><p>01:37:45 Warum Identität das Netzwerk partitionieren kann</p><p>01:43:37 Öffentliche Daten, Proof of Work und der perfekte Markt</p><p>01:49:10 Was die Diskussion über Full Nodes gezeigt hat</p><p>01:54:27 Dezentralisierung und ökonomische Sicherheit zusammengefasst</p><p>01:59:31 Abschluss und Value-for-Value-Aufruf</p>]]></description>
+      <guid isPermaLink="false">7d3a1f3d-c709-4eaa-8f8b-2260330ee403</guid>
+      <link>https://nodesignal.space/E301/</link>
+      <pubDate>Fri, 6 Nov 2026 11:00:00 +0000</pubDate>
+      <podcast:value type="lightning" method="lnaddress" suggested="0.00000005000">
+        <podcast:valueRecipient name="Nodesignal LN" type="lnaddress" address="nodesignal@getalby.com" split="80" fee="false" customKey="lnurl_callback" customValue="https://getalby.com/lnurlp/nodesignal/callback" />
+        <podcast:valueRecipient name="zettizettler" type="lnaddress" address="zettizettler@getalby.com" split="20" fee="false" customKey="lnurl_callback" customValue="https://getalby.com/lnurlp/zettizettler/callback" />
+      </podcast:value>
+      <podcast:soundbite startTime="640.00" duration="39.00">Nicht die Zahl der Nodes zählt, sondern die der Menschen</podcast:soundbite>
+      <itunes:image href="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/639294321283725841_episode_7d3a1f3d-c709-4eaa-8f8b-2260330ee403.jpg" />
+      <podcast:image href="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/639294321283725841_episode_7d3a1f3d-c709-4eaa-8f8b-2260330ee403.jpg" type="image/jpeg" alt="Nodesignal-Buchclub - E301 - Cryptoeconomics #7 - Valido, ergo sum - Sicherheit und Ökonomie im Netzwerk der Nodes" />
+      <itunes:duration>02:00:52</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+      <itunes:title>Nodesignal-Buchclub - E301 - Cryptoeconomics #7 - Valido, ergo sum - Sicherheit und Ökonomie im Netzwerk der Nodes</itunes:title>
+      <itunes:author>Die Nodesignal Crew</itunes:author>
+      <itunes:episode>301</itunes:episode>
+      <podcast:episode>301</podcast:episode>
+      <itunes:season>5</itunes:season>
+      <podcast:season>5</podcast:season>
+      <itunes:episodeType>Full</itunes:episodeType>
+      <enclosure url="https://serve.podhome.fm/episode/24263e26-0aa8-432a-467a-08dc1370a35c/6392943209915190457d3a1f3d-c709-4eaa-8f8b-2260330ee403.mp3" length="116039770" type="audio/mpeg" />
+      <podcast:alternateEnclosure type="video/mp4">
+        <podcast:source uri="https://youtu.be/QhZv4XY79_4" />
+      </podcast:alternateEnclosure>
+      <podcast:chapters url="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/6392943209915190457d3a1f3d-c709-4eaa-8f8b-2260330ee403v1.chapters.json" type="application/json" />
+      <podcast:transcript url="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/transcript_7d3a1f3d-c709-4eaa-8f8b-2260330ee403639294351950269376.html" type="text/html" language="de" rel="transcript" />
+      <podcast:transcript url="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/7d3a1f3d-c709-4eaa-8f8b-2260330ee403639294351939106599.srt" type="application/x-subrip" language="de" rel="captions" />
+      <podcast:transcript url="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/7d3a1f3d-c709-4eaa-8f8b-2260330ee403639294351935228595.vtt" type="text/vtt" language="de" rel="captions" />
+      <podcast:person role="Host" href="https://twitter.com/calso21" img="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/638406686777583900menzkphd_400x400.jpg">Calso</podcast:person>
+      <podcast:person role="Host" href="https://primal.net/p/nprofile1qqsg76wft8s3hxwnaf2xaen7fsr0yvf69ra9ctdy3pwyeht6gl3gltcrgfwyx" img="https://assets.podhome.fm/24263e26-0aa8-432a-467a-08dc1370a35c/638896582600201377zettizettler.jpg">Zettizettler</podcast:person>
+      <podcast:person role="Producer">zettizettler (Cutting)</podcast:person>
+      <podcast:person role="Host" href="https://primal.net/p/nprofile1qqspfyzftuxs55wr0vdqd3snjtaazxgrsjmc4wp3n6k7gktcfe08k0c7jmdy2">Actionslave</podcast:person>
+    </item>
+</channel>
+</rss>
