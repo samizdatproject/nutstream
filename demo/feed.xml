@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:podcast="https://podcastindex.org/namespace/1.0">
+  <channel>
+    <title>nutstream demo show</title>
+    <link>https://github.com/samizdatproject/nutstream</link>
+    <description>A demo feed for nutstream. Payments go to an in-page stand-in for a show's Route B endpoint, on the free test mint (no real sats).</description>
+    <language>en</language>
+    <podcast:txt purpose="cashu">creqAo2F0gaNhdGRwb3N0YWF4NWh0dHBzOi8vZGVtby1zaG93LmludmFsaWQvYXBpL2NvbW11bml0eS9lY2FzaC1wYXltZW50YWf3YXVjc2F0YWRzbnV0c3RyZWFtIGRlbW8gc2hvdw==</podcast:txt>
+    <podcast:value type="lightning" method="keysend" suggested="0.00000010000"/>
+    <item>
+      <title>Pop City (Komiku, CC0)</title>
+      <guid isPermaLink="false">nutstream-demo-pop-city</guid>
+      <enclosure url="https://samizdatproject.github.io/nutstream/demo/pop-city.mp3" type="audio/mpeg" length="3936306"/>
+      <itunes:duration>2:44</itunes:duration>
+    </item>
+    <item>
+      <title>Disco Challenge (Komiku, CC0)</title>
+      <guid isPermaLink="false">nutstream-demo-disco-challenge</guid>
+      <enclosure url="https://samizdatproject.github.io/nutstream/demo/disco-challenge.mp3" type="audio/mpeg" length="2839164"/>
+      <itunes:duration>1:58</itunes:duration>
+    </item>
+  </channel>
+</rss>
