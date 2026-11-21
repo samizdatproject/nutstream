@@ -1,5 +1,7 @@
 # nutstream
 
+[![tests](https://github.com/samizdatproject/nutstream/actions/workflows/test.yml/badge.svg)](https://github.com/samizdatproject/nutstream/actions/workflows/test.yml)
+
 **Pay podcasts by the minute with Cashu ecash: privately, from any Podcasting 2.0 feed. Both routes of the Cashu streaming spec: Route B (private HTTPS) and Route A (NIP-61 nutzaps).**
 
 nutstream is the listener side of Cashu streaming payments. Paste any podcast feed, set a rate and a budget, press
